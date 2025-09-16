@@ -19,131 +19,90 @@
 <script>
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxm--aVDnHHhospao_ct4WAOio5Myvsj51MnhGrBZ-2A5wXUTbCtZl8qkRch5_n6XJ39Q/exec";
 
-const statusEl = () => document.getElementById('status');
+    const statusEl = document.getElementById("status");
+    const syncButton = document.getElementById("syncButton");
 
-function setStatus(msg) {
-  statusEl().textContent = msg;
-  console.log(msg);
-}
+    // Replace with your real urgency calculation function
+    function calculateUrgency(card) {
+      let score = 0;
+      if (card.labels.includes("High")) score += 5;
+      if (card.labels.includes("Medium")) score += 3;
+      if (card.labels.includes("Low")) score += 1;
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const t = TrelloPowerUp.iframe();
-
-  // Wire buttons
-  document.getElementById('syncBtn').addEventListener('click', async () => {
-    document.getElementById('syncBtn').disabled = true;
-    await runSync(t);
-    document.getElementById('syncBtn').disabled = false;
-  });
-
-  document.getElementById('closeBtn').addEventListener('click', () => t.closePopup());
-});
-
-function getVirtualDueDays(labels, due) {
-  if (due) return new Date(due); // real due date takes priority
-
-  if (!labels || labels.length === 0) {
-    const dt = new Date();
-    dt.setDate(dt.getDate() + 45);
-    return dt;
-  }
-
-  if (labels.includes('Red')) {
-    const dt = new Date();
-    dt.setDate(dt.getDate() + 3);
-    return dt;
-  }
-  if (labels.includes('Yellow')) {
-    const dt = new Date();
-    dt.setDate(dt.getDate() + 7);
-    return dt;
-  }
-  if (labels.includes('Green')) {
-    const dt = new Date();
-    dt.setDate(dt.getDate() + 20);
-    return dt;
-  }
-
-  const dt = new Date();
-  dt.setDate(dt.getDate() + 45);
-  return dt;
-}
-
-function computeUrgency(labelDays, dueDate) {
-  const now = new Date();
-  const diffMs = dueDate - now;
-  const diffDays = diffMs / (1000*60*60*24);
-  const timeFactor = 1 / Math.max(diffDays, 0.1);
-
-  let subj = 0;
-  if (labelDays === 3) subj = 3;
-  else if (labelDays === 7) subj = 2;
-  else if (labelDays === 20) subj = 1;
-  else subj = 0;
-
-  return (subj + timeFactor) / 2;
-}
-
-async function runSync(t) {
-  try {
-    setStatus('Fetching cards from board...');
-    const cards = await t.cards('all');
-
-    if (!cards || cards.length === 0) {
-      setStatus('No cards found on this board.');
-      return;
+      // Simple date-based scoring: closer due date → higher urgency
+      const due = card.due ? new Date(card.due) : new Date(Date.now() + 45*24*60*60*1000);
+      const daysLeft = (due - new Date()) / (1000*60*60*24);
+      score += Math.max(0, 20 - daysLeft); // scales urgency as due date approaches
+      return score;
     }
 
-    const jsonData = cards.map(c => {
-      const virtualDue = getVirtualDueDays(c.labels, c.due);
-      
-      let labelDays = 45;
-      if (c.labels.includes('Red')) labelDays = 3;
-      else if (c.labels.includes('Yellow')) labelDays = 7;
-      else if (c.labels.includes('Green')) labelDays = 20;
+    async function fetchTrelloQueue(cardsData, retries = 3, delayMs = 2000) {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          const response = await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            mode: "cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(cardsData)
+          });
 
-      const urgency = computeUrgency(labelDays, virtualDue);
+          if (!response.ok) throw new Error(`Server responded with status ${response.status}`);
 
-      return {
-        id: c.id,
-        name: c.name,
-        due: c.due || null,
-        virtualDue: virtualDue.toISOString(),
-        labels: (c.labels || []).map(l => l.name),
-        url: c.shortUrl,
-        urgencyScore: urgency
-      };
-    });
+          const data = await response.json();
+          console.log("Apps Script response:", data);
 
-    // sort by urgency descending
-    jsonData.sort((a,b) => b.urgencyScore - a.urgencyScore);
+          if (data.status !== "ok") console.warn("Apps Script returned error:", data);
+          else console.log("Queue successfully synced!");
 
-    console.log('Prepared JSON with urgency:', jsonData);
-    setStatus(`Total cards fetched: ${jsonData.length}\nSending to Apps Script...`);
+          statusEl.textContent = `Queue synced! ${cardsData.length} cards processed.`;
+          return data;
 
-    const resp = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(jsonData)
-    });
+        } catch (err) {
+          console.error(`Attempt ${attempt} failed:`, err);
 
-    if (!resp.ok) {
-      setStatus('Apps Script returned HTTP ' + resp.status);
-      console.error('Apps Script response', resp);
-      return;
+          if (attempt < retries) {
+            console.log(`Retrying in ${delayMs/1000}s...`);
+            statusEl.textContent = `Retrying... (Attempt ${attempt})`;
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+          } else {
+            statusEl.textContent = `Failed to sync queue after ${retries} attempts`;
+            alert(`Error syncing Trello queue: ${err.message}`);
+          }
+        }
+      }
     }
 
-    const text = await resp.text();
-    console.log('Apps Script response:', text);
-    setStatus(`Sync successful! (${jsonData.length} cards sent)`);
+    async function syncQueue() {
+      statusEl.textContent = "Fetching cards from Trello...";
+      try {
+        const t = TrelloPowerUp.iframe();
+        const cards = await t.cards('all');
 
-    setTimeout(() => t.closePopup(), 900);
+        if (!cards || !cards.length) {
+          statusEl.textContent = "No cards found on board.";
+          return;
+        }
 
-  } catch (err) {
-    setStatus('Sync error: ' + (err.message || err));
-    console.error(err);
-  }
-}
-</script>
+        // Calculate urgency score for each card
+        cards.forEach(c => {
+          c.urgencyScore = calculateUrgency(c);
+        });
+
+        // Send to Google Apps Script
+        await fetchTrelloQueue(cards);
+
+      } catch (err) {
+        console.error("Error fetching Trello cards:", err);
+        statusEl.textContent = "Failed to fetch cards from Trello.";
+      }
+    }
+
+    // Initial sync
+    syncQueue();
+
+    // Button to manually trigger sync
+    syncButton.addEventListener('click', syncQueue);
+
+  </script>
 </body>
 </html>
