@@ -1,30 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Trello Dynamic Queue (index)</title>
-  <!-- Trello Power-Up client library -->
-  <script src="https://p.trellocdn.com/power-up.min.js"></script>
-</head>
-<body>
-<script>
-  // Initialize only the capability we use: board-buttons
-  TrelloPowerUp.initialize({
-    'board-buttons': function(t, options) {
-      return [{
-        text: 'Sync Tasks',
-        // open popup.html (relative to the Base URL you will set in Trello)
-        callback: function(t) {
-          // open a small popup; popup.html must exist at BaseURL/popup.html
-          return t.popup({
-            title: 'Sync Tasks',
-            url: './popup.html', // relative to your GitHub Pages base URL
-            height: 380
-          });
-        }
-      }];
+{
+  "name": "Dynamic Trello Queue",
+  "description": "Exposes board JSON with calculated urgency",
+  "capabilities": ["board-buttons"],
+  "author": "Marcos Sobrinho",
+  "version": "1.0",
+  "icon": {
+    "url": "https://marcos-sobrinho.github.io/trello-dynamic-queue/4133506.png",
+    "size": 64
+  },
+  "board-buttons": [
+    {
+      "text": "Export Queue JSON",
+      "callback": "https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html"
     }
-  });
-</script>
-</body>
-</html>
+  ]
+}
