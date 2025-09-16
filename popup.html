@@ -90,7 +90,7 @@
           due: c.due,
           labels: (c.labels || []).map(l => l.name),
           url: c.shortUrl,
-          board: (await t.board('id')).id  // ensure we attach board id
+          board: (await t.board('id')).id // ensure we attach board id
         }));
 
         console.log('Prepared JSON', jsonData);
