@@ -2,96 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Trello Dynamic Queue Power-Up</title>
-  <!-- Trello Power-Up client library (must load) -->
+  <title>Trello Dynamic Queue (index)</title>
+  <!-- Trello Power-Up client library -->
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
 </head>
 <body>
-  <script>
-    // === CONFIG ===
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxm--aVDnHHhospao_ct4WAOio5Myvsj51MnhGrBZ-2A5wXUTbCtZl8qkRch5_n6XJ39Q/exec";
-    // ==============
-
-    TrelloPowerUp.initialize({
-      // register a Board Button. Trello will render this button on the board.
-      'board-buttons': function(t, options) {
-        return [
-          {
-            text: 'Sync Tasks',
-            callback: function(t) {
-              console.log("Sync Tasks button clicked. board id:", options.board.id);
-
-              // 1) fetch lists on the board
-              return t.board('lists')
-                .then(boardData => {
-                  if(!boardData || !boardData.lists || boardData.lists.length === 0){
-                    console.warn("No lists found on this board");
-                    // show an alert in Trello UI and finish
-                    return t.alert({ message: "No lists found on this board." });
-                  }
-
-                  // 2) for each list fetch its cards (explicit fields)
-                  const listPromises = boardData.lists.map(list =>
-                    t.cards('id,name,labels,due,shortUrl', list.id)
-                     .then(cards => {
-                       console.log(`Fetched ${cards.length} cards from list:`, list.name);
-                       return cards;
-                     })
-                  );
-
-                  return Promise.all(listPromises);
-                })
-
-                // 3) flatten, map to JSON, and POST to Apps Script
-                .then(cardsArrays => {
-                  const allCards = [].concat(...cardsArrays);
-                  console.log("Total cards fetched:", allCards.length);
-
-                  const jsonData = allCards.map(c => ({
-                    id: c.id,
-                    name: c.name,
-                    due: c.due,
-                    labels: (c.labels || []).map(l => l.name),
-                    url: c.shortUrl,
-                    board: options.board.id
-                  }));
-
-                  console.log("Prepared JSON (preview):", jsonData);
-
-                  // if there are no cards, inform the user
-                  if(jsonData.length === 0){
-                    return t.alert({ message: "No cards to send (board is empty)." });
-                  }
-
-                  // POST to Apps Script
-                  return fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(jsonData)
-                  })
-                  .then(response => {
-                    if(response.ok){
-                      console.log("JSON sent to Apps Script successfully!");
-                      return t.alert({ message: "Sync successful (" + jsonData.length + " cards)." });
-                    } else {
-                      console.error("Apps Script responded with status:", response.status, response.statusText);
-                      return t.alert({ message: "Sync failed (server error: " + response.status + ")." });
-                    }
-                  })
-                  .catch(err => {
-                    console.error("Fetch error posting to Apps Script:", err);
-                    return t.alert({ message: "Sync failed (network error). Check console." });
-                  });
-                })
-                .catch(err => {
-                  console.error("Error fetching lists/cards:", err);
-                  return t.alert({ message: "Sync failed (error fetching cards). See console." });
-                });
-            } // end callback
-          } // end button
-        ];
-      } // end board-buttons
-    }); // end initialize
-  </script>
+<script>
+  // Initialize only the capability we use: board-buttons
+  TrelloPowerUp.initialize({
+    'board-buttons': function(t, options) {
+      return [{
+        text: 'Sync Tasks',
+        // open popup.html (relative to the Base URL you will set in Trello)
+        callback: function(t) {
+          // open a small popup; popup.html must exist at BaseURL/popup.html
+          return t.popup({
+            title: 'Sync Tasks',
+            url: './popup.html', // relative to your GitHub Pages base URL
+            height: 380
+          });
+        }
+      }];
+    }
+  });
+</script>
 </body>
 </html>
