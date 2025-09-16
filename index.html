@@ -1,63 +1,32 @@
-TrelloPowerUp.initialize({
-  'board-buttons': function(t, options) {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Trello Dynamic Queue Power-Up</title>
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+</head>
+<body>
+  <script>
+    TrelloPowerUp.initialize({
+      'board-buttons': function(t, options) {
+        console.log("Board button clicked, board ID:", options.board.id);
 
-    console.log("Board button clicked for board ID:", options.board.id);
+        // Example static JSON for debugging
+        const jsonData = [
+          { name: "Test Task", labels: ["High"], due: null, url: "https://trello.com/c/test", board: options.board.id }
+        ];
 
-    // Fetch all lists on the board
-    return t.board('lists').then(boardData => {
-      if(!boardData.lists || boardData.lists.length === 0){
-        console.warn("No lists found on this board");
+        fetch('https://script.google.com/macros/s/AKfycbxm--aVDnHHhospao_ct4WAOio5Myvsj51MnhGrBZ-2A5wXUTbCtZl8qkRch5_n6XJ39Q/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(jsonData)
+        })
+        .then(r => console.log("Static JSON sent"))
+        .catch(e => console.error("Fetch error:", e));
+
         return [];
       }
-
-      const listPromises = boardData.lists.map(list => {
-        return t.cards('id,name,labels,due,shortUrl', list.id).then(cards => {
-          console.log(`Fetched ${cards.length} cards from list: ${list.name}`);
-          return cards;
-        });
-      });
-
-      // Wait for all lists to be fetched
-      return Promise.all(listPromises);
-    })
-    .then(cardsArrays => {
-      // Flatten the array of arrays
-      const allCards = [].concat(...cardsArrays);
-
-      if(allCards.length === 0){
-        console.warn("No cards found on this board");
-      } else {
-        console.log(`Total cards fetched: ${allCards.length}`);
-      }
-
-      // Map to JSON format
-      const jsonData = allCards.map(c => ({
-        name: c.name,
-        due: c.due,
-        labels: c.labels.map(l => l.name),
-        url: c.shortUrl,
-        board: options.board.id
-      }));
-
-      console.log("Sending JSON to Apps Script:", jsonData);
-
-      // Send POST to your Apps Script
-      fetch('https://script.google.com/macros/s/AKfycbxm--aVDnHHhospao_ct4WAOio5Myvsj51MnhGrBZ-2A5wXUTbCtZl8qkRch5_n6XJ39Q/exec', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(jsonData)
-      })
-      .then(response => {
-        if(response.ok) console.log("JSON sent to Apps Script successfully!");
-        else console.error("Failed to send JSON:", response.status, response.statusText);
-      })
-      .catch(err => console.error("Fetch error:", err));
-
-      return [];
-    })
-    .catch(err => {
-      console.error("Error fetching lists/cards:", err);
-      return [];
     });
-  }
-});
+  </script>
+</body>
+</html>
