@@ -1,53 +1,30 @@
-// Initialize Trello iframe
-const t = TrelloPowerUp.iframe();
-
-async function generateJSON() {
-  try {
-    // Fetch all cards on the board
-    const cards = await t.cards('all');
-
-    if (!cards || !cards.length) {
-      document.body.innerHTML = JSON.stringify({ error: "No cards found" });
-      return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Trello Dynamic Queue (index)</title>
+  <!-- Trello Power-Up client library -->
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+</head>
+<body>
+<script>
+  // Initialize only the capability we use: board-buttons
+  TrelloPowerUp.initialize({
+    'board-buttons': function(t, options) {
+      return [{
+        text: 'Sync Tasks',
+        // open popup.html (relative to the Base URL you will set in Trello)
+        callback: function(t) {
+          // open a small popup; popup.html must exist at BaseURL/popup.html
+          return t.popup({
+            title: 'Sync Tasks',
+            url: './popup.html', // relative to your GitHub Pages base URL
+            height: 380
+          });
+        }
+      }];
     }
-
-    // Add urgency score to each card
-    const cardsWithUrgency = cards.map(c => {
-      const urgencyScore = calculateUrgency(c);
-      return {
-        id: c.id,
-        name: c.name,
-        labels: c.labels,
-        due: c.due,
-        url: c.url,
-        urgencyScore: urgencyScore
-      };
-    });
-
-    // Output raw JSON for the shortcut
-    document.body.innerText = JSON.stringify(cardsWithUrgency);
-
-  } catch (err) {
-    console.error("Error generating JSON:", err);
-    document.body.innerText = JSON.stringify({ error: err.message });
-  }
-}
-
-function calculateUrgency(card) {
-  let score = 0;
-
-  // Labels: High/Medium/Low
-  if (card.labels.includes("High")) score += 5;
-  if (card.labels.includes("Medium")) score += 3;
-  if (card.labels.includes("Low")) score += 1;
-
-  // Due date scoring
-  const dueDate = card.due ? new Date(card.due) : new Date(Date.now() + 45*24*60*60*1000);
-  const daysLeft = (dueDate - new Date()) / (1000*60*60*24); 
-  score += Math.max(0, 20 - daysLeft); // urgency rises as deadline approaches
-
-  return score;
-}
-
-// Run immediately
-generateJSON();
+  });
+</script>
+</body>
+</html>
