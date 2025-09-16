@@ -2,12 +2,12 @@
   "name": "Dynamic Trello Queue",
   "description": "Exposes board JSON with urgency scores",
   "capabilities": ["board-buttons"],
+  "author": "Marcos Sobrinho",
+  "version": "1.0",
   "board-buttons": [
     {
       "text": "Export Queue JSON",
       "callback": "https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html"
     }
-  ],
-  "author": "Marcos Sobrinho",
-  "version": "1.0"
+  ]
 }
