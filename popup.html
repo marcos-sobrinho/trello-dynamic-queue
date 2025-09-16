@@ -83,6 +83,10 @@
 
         setStatus(`Total cards fetched: ${allCards.length}`);
 
+        // get board id once
+        const boardInfo = await t.board('id');
+        const boardId = boardInfo.id;
+        
         // map to simple JSON shape
         const jsonData = allCards.map(c => ({
           id: c.id,
@@ -90,7 +94,7 @@
           due: c.due,
           labels: (c.labels || []).map(l => l.name),
           url: c.shortUrl,
-          board: (await t.board('id')).id // ensure we attach board id
+          board: boardId
         }));
 
         console.log('Prepared JSON', jsonData);
