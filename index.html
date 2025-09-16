@@ -1,40 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>My Trello Power-Up</title>
-</head>
-<body>
-  <script src="https://p.trellocdn.com/power-up.min.js"></script>
-  <script>
-    TrelloPowerUp.initialize({
-      'board-buttons': function(t, options) {
-        return t.cards('id,name,labels,due,shortUrl').then(cards => {
-          const jsonData = cards.map(c => ({
-            name: c.name,
-            due: c.due,
-            labels: c.labels.map(l => l.name),
-            url: c.shortUrl,
-            board: options.board.id
-          }));
+TrelloPowerUp.initialize({
+  'board-buttons': function(t, options) {
+    return t.board('lists').then(boardData => {
+      const listIds = boardData.lists.map(l => l.id);
+      return Promise.all(listIds.map(listId => t.cards('id,name,labels,due,shortUrl', listId)));
+    }).then(cardsArrays => {
+      // Flatten array of arrays
+      const allCards = [].concat(...cardsArrays);
+      console.log("Cards fetched:", allCards);
 
-          console.log("Sending JSON to Apps Script:", jsonData);
+      const jsonData = allCards.map(c => ({
+        name: c.name,
+        due: c.due,
+        labels: c.labels.map(l => l.name),
+        url: c.shortUrl,
+        board: options.board.id
+      }));
 
-          fetch('https://script.google.com/macros/s/AKfycbxm--aVDnHHhospao_ct4WAOio5Myvsj51MnhGrBZ-2A5wXUTbCtZl8qkRch5_n6XJ39Q/exec', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(jsonData)
-          })
-          .then(response => {
-            if(response.ok) console.log("JSON sent to Apps Script successfully!");
-            else console.error("Failed to send JSON:", response.status, response.statusText);
-          })
-          .catch(err => console.error("Fetch error:", err));
+      console.log("Sending JSON to Apps Script:", jsonData);
 
-          return [];
-        });
-      }
+      fetch('https://script.google.com/macros/s/AKfycbxm--aVDnHHhospao_ct4WAOio5Myvsj51MnhGrBZ-2A5wXUTbCtZl8qkRch5_n6XJ39Q/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData)
+      })
+      .then(response => {
+        if(response.ok) console.log("JSON sent to Apps Script successfully!");
+        else console.error("Failed to send JSON:", response.status, response.statusText);
+      })
+      .catch(err => console.error("Fetch error:", err));
+
+      return [];
     });
-  </script>
-</body>
-</html>
+  }
+});
