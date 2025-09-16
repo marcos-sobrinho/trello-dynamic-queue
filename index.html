@@ -1,30 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Trello Dynamic Queue (index)</title>
-  <!-- Trello Power-Up client library -->
-  <script src="https://p.trellocdn.com/power-up.min.js"></script>
-</head>
-<body>
-<script>
-  // Initialize only the capability we use: board-buttons
-  TrelloPowerUp.initialize({
-    'board-buttons': function(t, options) {
-      return [{
-        text: 'Sync Tasks',
-        // open popup.html (relative to the Base URL you will set in Trello)
-        callback: function(t) {
-          // open a small popup; popup.html must exist at BaseURL/popup.html
-          return t.popup({
-            title: 'Sync Tasks',
-            url: './popup.html', // relative to your GitHub Pages base URL
-            height: 380
-          });
-        }
-      }];
+const t = TrelloPowerUp.iframe();
+
+async function generateJSON() {
+  try {
+    // Fetch all cards
+    const cards = await t.cards('all');
+
+    if (!cards || cards.length === 0) {
+      document.body.innerText = JSON.stringify({ error: "No cards found" });
+      return;
     }
-  });
-</script>
-</body>
-</html>
+
+    const cardsWithUrgency = cards.map(c => ({
+      id: c.id,
+      name: c.name,
+      labels: c.labels,
+      due: c.due,
+      url: c.url,
+      urgencyScore: calculateUrgency(c)
+    }));
+
+    // Output raw JSON so Google Apps or Shortcuts can fetch
+    document.body.innerText = JSON.stringify(cardsWithUrgency);
+
+  } catch (err) {
+    console.error(err);
+    document.body.innerText = JSON.stringify({ error: err.message });
+  }
+}
+
+function calculateUrgency(card) {
+  let score = 0;
+  if (card.labels.includes("High")) score += 5;
+  if (card.labels.includes("Medium")) score += 3;
+  if (card.labels.includes("Low")) score += 1;
+
+  const dueDate = card.due ? new Date(card.due) : new Date(Date.now() + 45*24*60*60*1000);
+  const daysLeft = (dueDate - new Date()) / (1000*60*60*24);
+  score += Math.max(0, 20 - daysLeft);
+  return score;
+}
+
+// Run automatically when iframe loads
+generateJSON();
