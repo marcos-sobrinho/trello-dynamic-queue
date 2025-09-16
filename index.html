@@ -1,17 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Dynamic Queue Power-Up</title>
-  <script src="https://p.trellocdn.com/power-up.min.js"></script>
-</head>
-<body>
-<script>
 TrelloPowerUp.initialize({
   'board-buttons': function(t, options) {
-    return t.cards('all').then(cards => {
+    return t.cards('id,name,labels,due,shortUrl').then(cards => {
 
-      // Build JSON
+      // Map cards to JSON format
       const jsonData = cards.map(c => ({
         name: c.name,
         due: c.due,
@@ -20,22 +11,22 @@ TrelloPowerUp.initialize({
         board: options.board.id
       }));
 
+      // Debug: log the JSON to console
       console.log("Sending JSON to Apps Script:", jsonData);
 
-      // POST JSON to your Google Apps Script endpoint
+      // Send POST to Google Apps Script
       fetch('https://script.google.com/macros/s/AKfycbxm--aVDnHHhospao_ct4WAOio5Myvsj51MnhGrBZ-2A5wXUTbCtZl8qkRch5_n6XJ39Q/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(jsonData)
-      }).then(response => {
-        if(response.ok) console.log("JSON successfully sent!");
-        else console.error("Failed to send JSON");
-      }).catch(err => console.error(err));
+      })
+      .then(response => {
+        if(response.ok) console.log("JSON sent to Apps Script successfully!");
+        else console.error("Failed to send JSON:", response.status, response.statusText);
+      })
+      .catch(err => console.error("Fetch error:", err));
 
       return [];
     });
   }
 });
-</script>
-</body>
-</html>
