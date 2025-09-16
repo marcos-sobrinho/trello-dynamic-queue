@@ -1,13 +1,36 @@
 TrelloPowerUp.initialize({
   'board-buttons': function(t, options) {
-    return t.board('lists').then(boardData => {
-      const listIds = boardData.lists.map(l => l.id);
-      return Promise.all(listIds.map(listId => t.cards('id,name,labels,due,shortUrl', listId)));
-    }).then(cardsArrays => {
-      // Flatten array of arrays
-      const allCards = [].concat(...cardsArrays);
-      console.log("Cards fetched:", allCards);
 
+    console.log("Board button clicked for board ID:", options.board.id);
+
+    // Fetch all lists on the board
+    return t.board('lists').then(boardData => {
+      if(!boardData.lists || boardData.lists.length === 0){
+        console.warn("No lists found on this board");
+        return [];
+      }
+
+      const listPromises = boardData.lists.map(list => {
+        return t.cards('id,name,labels,due,shortUrl', list.id).then(cards => {
+          console.log(`Fetched ${cards.length} cards from list: ${list.name}`);
+          return cards;
+        });
+      });
+
+      // Wait for all lists to be fetched
+      return Promise.all(listPromises);
+    })
+    .then(cardsArrays => {
+      // Flatten the array of arrays
+      const allCards = [].concat(...cardsArrays);
+
+      if(allCards.length === 0){
+        console.warn("No cards found on this board");
+      } else {
+        console.log(`Total cards fetched: ${allCards.length}`);
+      }
+
+      // Map to JSON format
       const jsonData = allCards.map(c => ({
         name: c.name,
         due: c.due,
@@ -18,6 +41,7 @@ TrelloPowerUp.initialize({
 
       console.log("Sending JSON to Apps Script:", jsonData);
 
+      // Send POST to your Apps Script
       fetch('https://script.google.com/macros/s/AKfycbxm--aVDnHHhospao_ct4WAOio5Myvsj51MnhGrBZ-2A5wXUTbCtZl8qkRch5_n6XJ39Q/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,6 +53,10 @@ TrelloPowerUp.initialize({
       })
       .catch(err => console.error("Fetch error:", err));
 
+      return [];
+    })
+    .catch(err => {
+      console.error("Error fetching lists/cards:", err);
       return [];
     });
   }
