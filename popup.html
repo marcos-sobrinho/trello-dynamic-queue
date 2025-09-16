@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Trello Dynamic Queue (popup)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 14px; padding: 12px; }
+    #status { margin: 8px 0; white-space: pre-wrap; }
+    button { padding: 8px 12px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h3>Dynamic Queue — Sync</h3>
+  <div id="status">Ready.</div>
+  <div>
+    <button id="syncBtn">Sync now</button>
+    <button id="closeBtn">Close</button>
+  </div>
+
+  <script>
+    // === CONFIG: replace with your Apps Script Web App URL if it changes ===
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxm--aVDnHHhospao_ct4WAOio5Myvsj51MnhGrBZ-2A5wXUTbCtZl8qkRch5_n6XJ39Q/exec";
+    // =====================================================================
+
+    const statusEl = () => document.getElementById('status');
+    const syncBtn = document.getElementById('syncBtn');
+    const closeBtn = document.getElementById('closeBtn');
+
+    // helper to write status
+    function setStatus(txt) {
+      statusEl().textContent = txt;
+      console.log(txt);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const t = TrelloPowerUp.iframe(); // this exists inside the popup iframe
+      setStatus('Getting board info...');
+      try {
+        const boardInfo = await t.board('id', 'name');
+        setStatus('Board: ' + (boardInfo.name || boardInfo.id));
+      } catch (err) {
+        setStatus('Error getting board info: ' + err);
+        console.error(err);
+      }
+
+      // wire the buttons
+      syncBtn.addEventListener('click', async () => {
+        syncBtn.disabled = true;
+        await runSync(t);
+        syncBtn.disabled = false;
+      });
+
+      closeBtn.addEventListener('click', () => {
+        // close popup (returns a Promise)
+        t.closePopup();
+      });
+    });
+
+    async function runSync(t) {
+      try {
+        setStatus('Fetching lists...');
+        // fetch lists on the board
+        const boardData = await t.board('lists');
+        if (!boardData || !boardData.lists || boardData.lists.length === 0) {
+          setStatus('No lists found on this board.');
+          return;
+        }
+
+        // For each list fetch cards (explicit fields)
+        setStatus('Fetching cards from lists...');
+        const listPromises = boardData.lists.map(list =>
+          t.cards('id,name,labels,due,shortUrl', list.id)
+            .then(cards => {
+              console.log(`Fetched ${cards.length} cards from list:`, list.name);
+              return cards;
+            })
+        );
+
+        const cardsArrays = await Promise.all(listPromises);
+        const allCards = [].concat(...cardsArrays); // flatten
+
+        setStatus(`Total cards fetched: ${allCards.length}`);
+
+        // map to simple JSON shape
+        const jsonData = allCards.map(c => ({
+          id: c.id,
+          name: c.name,
+          due: c.due,
+          labels: (c.labels || []).map(l => l.name),
+          url: c.shortUrl,
+          board: (await t.board('id')).id  // ensure we attach board id
+        }));
+
+        console.log('Prepared JSON', jsonData);
+
+        if (jsonData.length === 0) {
+          setStatus('No cards to send (board empty).');
+          return;
+        }
+
+        setStatus('Sending JSON to Apps Script...');
+        const resp = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(jsonData)
+        });
+
+        if (!resp.ok) {
+          setStatus('Apps Script returned HTTP ' + resp.status);
+          console.error('Apps Script response', resp);
+          return;
+        }
+
+        const respText = await resp.text();
+        console.log('Apps Script response:', respText);
+        setStatus('Sync successful! (' + jsonData.length + ' cards sent)');
+        // Close with short delay so user can read the status
+        setTimeout(() => t.closePopup(), 900);
+      } catch (err) {
+        setStatus('Sync failed: ' + err.message);
+        console.error('Sync error:', err);
+      }
+    }
+  </script>
+</body>
+</html>
