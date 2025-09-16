@@ -23,7 +23,7 @@ TrelloPowerUp.initialize({
       console.log("Sending JSON to Apps Script:", jsonData);
 
       // POST JSON to your Google Apps Script endpoint
-      fetch('YOUR_APPS_SCRIPT_WEBAPP_URL', {
+      fetch('https://script.google.com/home/projects/1LF7dSBburA7TN_PfDV2HM70d5WwU6tB0GWZZzHGUOuCLmntc9ep45KOr/edit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(jsonData)
