@@ -1,4 +1,10 @@
-const t = TrelloPowerUp.iframe();
+if (typeof TrelloPowerUp !== "undefined") {
+  const t = TrelloPowerUp.iframe();
+  // Your existing index.js code
+  // queue.js JSON output code
+} else {
+  console.log("Not running inside Trello iframe");
+}
 
 async function generateJSON() {
   try {
@@ -41,4 +47,5 @@ function calculateUrgency(card) {
 }
 
 // Run automatically when iframe loads
+
 generateJSON();
