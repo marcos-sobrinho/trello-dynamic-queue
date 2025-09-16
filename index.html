@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dynamic Queue Power-Up</title>
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+</head>
+<body>
+<script>
+TrelloPowerUp.initialize({
+  'board-buttons': function(t, options) {
+    return t.cards('all').then(cards => {
+
+      // Build JSON
+      const jsonData = cards.map(c => ({
+        name: c.name,
+        due: c.due,
+        labels: c.labels.map(l => l.name),
+        url: c.shortUrl,
+        board: options.board.id
+      }));
+
+      console.log("Sending JSON to Apps Script:", jsonData);
+
+      // POST JSON to your Google Apps Script endpoint
+      fetch('YOUR_APPS_SCRIPT_WEBAPP_URL', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData)
+      }).then(response => {
+        if(response.ok) console.log("JSON successfully sent!");
+        else console.error("Failed to send JSON");
+      }).catch(err => console.error(err));
+
+      return [];
+    });
+  }
+});
+</script>
+</body>
+</html>
