@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Queue JSON</title>
-<script src="https://p.trellocdn.com/power-up.min.js"></script>
-<script>
 const t = TrelloPowerUp.iframe();
 
-async function outputJSON() {
+async function outputQueue() {
   try {
     const cards = await t.cards('all');
 
@@ -20,7 +13,7 @@ async function outputJSON() {
       urgencyScore: calculateUrgency(c)
     }));
 
-    // Overwrite the whole page with pure JSON
+    // Replace the page with raw JSON so Apps Script can fetch it
     document.open();
     document.write(JSON.stringify(data));
     document.close();
@@ -44,9 +37,4 @@ function calculateUrgency(card) {
   return score;
 }
 
-outputJSON();
-</script>
-</head>
-<body>
-</body>
-</html>
+outputQueue();
