@@ -39,30 +39,88 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('closeBtn').addEventListener('click', () => t.closePopup());
 });
 
+function getVirtualDueDays(labels, due) {
+  if (due) return new Date(due); // real due date takes priority
+
+  if (!labels || labels.length === 0) {
+    const dt = new Date();
+    dt.setDate(dt.getDate() + 45);
+    return dt;
+  }
+
+  if (labels.includes('Red')) {
+    const dt = new Date();
+    dt.setDate(dt.getDate() + 3);
+    return dt;
+  }
+  if (labels.includes('Yellow')) {
+    const dt = new Date();
+    dt.setDate(dt.getDate() + 7);
+    return dt;
+  }
+  if (labels.includes('Green')) {
+    const dt = new Date();
+    dt.setDate(dt.getDate() + 20);
+    return dt;
+  }
+
+  const dt = new Date();
+  dt.setDate(dt.getDate() + 45);
+  return dt;
+}
+
+function computeUrgency(labelDays, dueDate) {
+  const now = new Date();
+  const diffMs = dueDate - now;
+  const diffDays = diffMs / (1000*60*60*24);
+  const timeFactor = 1 / Math.max(diffDays, 0.1);
+
+  let subj = 0;
+  if (labelDays === 3) subj = 3;
+  else if (labelDays === 7) subj = 2;
+  else if (labelDays === 20) subj = 1;
+  else subj = 0;
+
+  return (subj + timeFactor) / 2;
+}
+
 async function runSync(t) {
   try {
     setStatus('Fetching cards from board...');
-
-    // Fetch all cards on the board
     const cards = await t.cards('all');
+
     if (!cards || cards.length === 0) {
       setStatus('No cards found on this board.');
       return;
     }
 
-    // Flatten JSON data with relevant fields
-    const jsonData = cards.map(c => ({
-      id: c.id,
-      name: c.name,
-      due: c.due,
-      labels: (c.labels || []).map(l => l.name),
-      url: c.shortUrl
-    }));
+    const jsonData = cards.map(c => {
+      const virtualDue = getVirtualDueDays(c.labels, c.due);
+      
+      let labelDays = 45;
+      if (c.labels.includes('Red')) labelDays = 3;
+      else if (c.labels.includes('Yellow')) labelDays = 7;
+      else if (c.labels.includes('Green')) labelDays = 20;
 
-    console.log('Prepared JSON:', jsonData);
+      const urgency = computeUrgency(labelDays, virtualDue);
+
+      return {
+        id: c.id,
+        name: c.name,
+        due: c.due || null,
+        virtualDue: virtualDue.toISOString(),
+        labels: (c.labels || []).map(l => l.name),
+        url: c.shortUrl,
+        urgencyScore: urgency
+      };
+    });
+
+    // sort by urgency descending
+    jsonData.sort((a,b) => b.urgencyScore - a.urgencyScore);
+
+    console.log('Prepared JSON with urgency:', jsonData);
     setStatus(`Total cards fetched: ${jsonData.length}\nSending to Apps Script...`);
 
-    // POST to Apps Script
     const resp = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
