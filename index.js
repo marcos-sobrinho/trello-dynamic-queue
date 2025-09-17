@@ -3,7 +3,7 @@
 var t = window.TrelloPowerUp.iframe();
 
 // Replace with your board ID (from board URL: trello.com/b/{boardId}/...)
-const BOARD_ID = "YOUR_BOARD_ID_HERE";
+const BOARD_ID = "yOjCzqZa";
 
 async function fetchQueue() {
   try {
@@ -46,3 +46,4 @@ window.boardButtonCallback = function(t) {
     height: 400
   });
 };
+
