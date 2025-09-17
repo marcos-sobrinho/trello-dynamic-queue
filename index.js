@@ -12,7 +12,7 @@ window.TrelloPowerUp.initialize({
       callback: function (t) {
         return t.popup({
           title: 'Dynamic Queue',
-          url: 'popup.html', // opens your popup
+          url: 'https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html', // opens your popup
           height: 400
         });
       }
@@ -20,3 +20,4 @@ window.TrelloPowerUp.initialize({
   }
 
 });
+
