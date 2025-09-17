@@ -1,51 +1,23 @@
-if (typeof TrelloPowerUp !== "undefined") {
-  const t = TrelloPowerUp.iframe();
-  // Your existing index.js code
-  // queue.js JSON output code
-} else {
-  console.log("Not running inside Trello iframe");
-}
+/* global TrelloPowerUp */
+var t = TrelloPowerUp.iframe();
 
-async function generateJSON() {
-  try {
-    // Fetch all cards
-    const cards = await t.cards('all');
+console.log("Popup loaded, Trello iframe context active.");
 
-    if (!cards || cards.length === 0) {
-      document.body.innerText = JSON.stringify({ error: "No cards found" });
-      return;
-    }
+document.getElementById('generate').addEventListener('click', function() {
+  t.board('all')
+    .then(boardData => {
+      // Use your queue.js logic
+      const queued = calculateQueue(boardData);
+      document.getElementById('output').textContent = JSON.stringify(queued, null, 2);
 
-    const cardsWithUrgency = cards.map(c => ({
-      id: c.id,
-      name: c.name,
-      labels: c.labels,
-      due: c.due,
-      url: c.url,
-      urgencyScore: calculateUrgency(c)
-    }));
-
-    // Output raw JSON so Google Apps or Shortcuts can fetch
-    document.body.innerText = JSON.stringify(cardsWithUrgency);
-
-  } catch (err) {
-    console.error(err);
-    document.body.innerText = JSON.stringify({ error: err.message });
-  }
-}
-
-function calculateUrgency(card) {
-  let score = 0;
-  if (card.labels.includes("High")) score += 5;
-  if (card.labels.includes("Medium")) score += 3;
-  if (card.labels.includes("Low")) score += 1;
-
-  const dueDate = card.due ? new Date(card.due) : new Date(Date.now() + 45*24*60*60*1000);
-  const daysLeft = (dueDate - new Date()) / (1000*60*60*24);
-  score += Math.max(0, 20 - daysLeft);
-  return score;
-}
-
-// Run automatically when iframe loads
-
-generateJSON();
+      // Optional: send to Google Apps Script
+      fetch("YOUR_GOOGLE_APPS_SCRIPT_URL", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(queued)
+      })
+      .then(res => console.log("Sync success", res))
+      .catch(err => console.error("Sync error", err));
+    })
+    .catch(err => console.error("Error fetching board data", err));
+});
