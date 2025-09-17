@@ -1,20 +1,14 @@
 {
-  "manifest_version": 1,
   "name": "Dynamic Queue",
-  "description": "Generate and export a dynamic task queue.",
-  "author": "Marcos Sobrinho",
+  "description": "Outputs your Trello tasks queue as JSON",
+  "author": "Marcos",
   "capabilities": [
     "board-buttons"
   ],
   "board-buttons": [
     {
-      "text": "Open Queue",
-      "icon": {
-        "url": "https://marcos-sobrinho.github.io/trello-dynamic-queue/4133506.png"
-      },
-      "callback": {
-        "url": "https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html"
-      }
+      "text": "Show Queue",
+      "callback": "https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html"
     }
   ]
 }
