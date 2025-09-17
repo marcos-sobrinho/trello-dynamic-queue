@@ -1,14 +1,15 @@
 {
-  "name": "Dynamic Trello Queue",
-  "description": "Exposes board JSON with urgency scores",
-  "capabilities": ["board-buttons"],
-  "author": "Marcos Sobrinho",
-  "version": "1.0",
-  "board-buttons": [
-    {
-      "text": "Export Queue JSON",
-      "callback": "https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html"
+  "name": "Dynamic Queue",
+  "details": "Syncs Trello tasks into a dynamic queue.",
+  "icon": {
+    "url": "https://marcos-sobrinho.github.io/trello-dynamic-queue/4133506.png"
+  },
+  "capabilities": [
+    "board-buttons"
+  ],
+  "connectors": {
+    "iframe": {
+      "url": "https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html"
     }
-  ]
+  }
 }
-
