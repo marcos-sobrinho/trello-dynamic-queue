@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dynamic Queue JSON</title>
+<title>Test Popup</title>
 <script src="https://p.trellocdn.com/power-up.min.js"></script>
-<script src="index.js"></script>
-<script src="queue.js"></script>
 </head>
 <body>
+<script>
+  const t = TrelloPowerUp.iframe();
+  t.closePopup(); // just close immediately, ensures iframe loaded
+  console.log("Iframe loaded!");
+</script>
 </body>
 </html>
