@@ -1,14 +1,16 @@
 {
-  "name": "Dynamic Queue",
-  "description": "Outputs your Trello tasks queue as JSON",
-  "author": "Marcos",
+  "connectors": {},
   "capabilities": [
     "board-buttons"
   ],
   "board-buttons": [
     {
-      "text": "Show Queue",
-      "callback": "https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html"
+      "text": "Dynamic Queue",
+      "callback": "boardButtonCallback"
     }
-  ]
+  ],
+  "iframe": {
+    "url": "https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html",
+    "height": 400
+  }
 }
