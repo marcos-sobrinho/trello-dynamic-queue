@@ -1,76 +1,68 @@
-/* global TrelloPowerUp */
-var t = TrelloPowerUp.iframe();
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialize Trello Power-Up iframe
+  var t = TrelloPowerUp.iframe();
 
-// --- queue.js logic ---
-function labelToDays(label) {
-  switch (label?.toLowerCase()) {
-    case 'red': return 3;
-    case 'yellow': return 7;
-    case 'green': return 20;
-    case 'white': return 45;
-    default: return 45; // no label → white window
-  }
-}
+  async function generateQueue() {
+    try {
+      // Fetch full board info
+      const boardData = await t.board('all');
 
-function labelToScore(label) {
-  switch (label?.toLowerCase()) {
-    case 'red': return 4;
-    case 'yellow': return 3;
-    case 'green': return 2;
-    case 'white': return 1;
-    default: return 2; // default medium
-  }
-}
+      const queue = [];
 
-function daysUntil(dueDate, virtualDays) {
-  if (!dueDate) return virtualDays;
-  const now = new Date();
-  const due = new Date(dueDate);
-  const diff = due - now;
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
-}
+      boardData.lists.forEach(list => {
+        list.cards.forEach(card => {
+          const labelName = card.labels?.[0]?.name || 'white';
 
-function calculateQueue(boardData) {
-  const queue = [];
+          // Map labels to virtual due days
+          const virtualDays = (() => {
+            switch(labelName.toLowerCase()) {
+              case 'red': return 3;
+              case 'yellow': return 7;
+              case 'green': return 20;
+              case 'white': return 45;
+              default: return 45;
+            }
+          })();
 
-  boardData.lists.forEach(list => {
-    if (!list.cards) return;
-    list.cards.forEach(card => {
-      const labelName = card.labels?.[0]?.name || 'white';
-      const virtualDays = labelToDays(labelName);
-      const labelScore = labelToScore(labelName);
-      const days = daysUntil(card.due, virtualDays);
-      const deadlineScore = 1 / Math.max(days, 1);
-      const priorityScore = labelScore + deadlineScore;
+          const labelScore = (() => {
+            switch(labelName.toLowerCase()) {
+              case 'red': return 4;
+              case 'yellow': return 3;
+              case 'green': return 2;
+              case 'white': return 1;
+              default: return 2;
+            }
+          })();
 
-      queue.push({
-        id: card.id,
-        name: card.name,
-        listName: list.name,
-        due: card.due || null,
-        label: labelName,
-        priorityScore: priorityScore
+          const now = new Date();
+          const dueDate = card.due ? new Date(card.due) : null;
+          const daysUntilDue = dueDate ? Math.ceil((dueDate - now)/(1000*60*60*24)) : virtualDays;
+          const deadlineScore = 1 / Math.max(daysUntilDue, 1);
+
+          const priorityScore = labelScore + deadlineScore;
+
+          queue.push({
+            id: card.id,
+            name: card.name,
+            listName: list.name,
+            due: card.due || null,
+            label: labelName,
+            priorityScore: priorityScore
+          });
+        });
       });
-    });
-  });
 
-  queue.sort((a, b) => b.priorityScore - a.priorityScore);
-  return queue;
-}
+      // Sort by priority descending
+      queue.sort((a,b) => b.priorityScore - a.priorityScore);
 
-// --- Generate JSON dynamically ---
-async function generateJSON() {
-  try {
-    const boardData = await t.board('all');
-    const queue = calculateQueue(boardData);
+      // Output JSON dynamically
+      document.getElementById('output').innerText = JSON.stringify(queue, null, 2);
 
-    // Output JSON dynamically for fetch
-    document.body.innerText = JSON.stringify(queue, null, 2);
-  } catch (err) {
-    console.error(err);
-    document.body.innerText = JSON.stringify({ error: err.message });
+    } catch(err) {
+      console.error(err);
+      document.getElementById('output').innerText = JSON.stringify({ error: err.message });
+    }
   }
-}
 
-// Run on load
-generateJSON();
+  generateQueue();
+});
