@@ -1,15 +1,25 @@
 {
+  "manifest_version": 1,
   "name": "Dynamic Queue",
-  "details": "Syncs Trello tasks into a dynamic queue.",
-  "icon": {
-    "url": "https://marcos-sobrinho.github.io/trello-dynamic-queue/4133506.png"
-  },
+  "description": "Generate and export a dynamic task queue.",
+  "author": "Marcos Sobrinho",
   "capabilities": [
     "board-buttons"
   ],
   "connectors": {
-    "iframe": {
-      "url": "https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html"
+  },
+  "icons": {
+    "48": "https://marcos-sobrinho.github.io/trello-dynamic-queue/4133506.png"
+  },
+  "board-buttons": [
+    {
+      "text": "Open Queue",
+      "icon": {
+        "url": "https://marcos-sobrinho.github.io/trello-dynamic-queue/4133506.png"
+      },
+      "callback": {
+        "url": "https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html"
+      }
     }
-  }
+  ]
 }
