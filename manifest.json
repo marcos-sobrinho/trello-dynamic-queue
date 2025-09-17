@@ -6,11 +6,6 @@
   "capabilities": [
     "board-buttons"
   ],
-  "connectors": {
-  },
-  "icons": {
-    "48": "https://marcos-sobrinho.github.io/trello-dynamic-queue/4133506.png"
-  },
   "board-buttons": [
     {
       "text": "Open Queue",
