@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Test Popup</title>
-<script src="https://p.trellocdn.com/power-up.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Queue Export</title>
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
 </head>
 <body>
-<script>
-  const t = TrelloPowerUp.iframe();
-  t.closePopup(); // just close immediately, ensures iframe loaded
-  console.log("Iframe loaded!");
-</script>
+  <h3>Exporting Queue...</h3>
+  <script src="queue.js"></script>
+  <script src="index.js"></script>
+  <script>
+    // Make sure iframe initialized
+    const t = TrelloPowerUp.iframe();
+
+    console.log("Popup loaded, Trello iframe context active.");
+  </script>
 </body>
 </html>
