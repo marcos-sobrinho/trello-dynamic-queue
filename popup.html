@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Dynamic Queue</title>
-  </head>
-  <body>
-    <h3>Dynamic Queue Sync</h3>
-    <button id="syncBtn">Sync to Google Apps</button>
-
-    <!-- Load Trello Power-Up client -->
-    <script src="https://p.trellocdn.com/power-up.min.js"></script>
-    <!-- Load your logic -->
-    <script src="https://marcos-sobrinho.github.io/trello-dynamic-queue/index.js"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <title>Dynamic Queue</title>
+  <!-- Trello Power-Up client -->
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  <!-- Your logic -->
+  <script src="index.js"></script>
+  <script src="queue.js"></script>
+</head>
+<body>
+  <h1>Dynamic Queue</h1>
+  <button id="generate">Generate JSON</button>
+  <pre id="output"></pre>
+</body>
 </html>
