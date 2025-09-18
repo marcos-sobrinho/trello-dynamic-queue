@@ -1,16 +1,30 @@
 {
-  "connectors": {},
+  "name": "Dynamic Queue",
+  "description": "Priority queue manager with evolving virtual deadlines",
+  "author": "Marcos Sobrinho",
   "capabilities": [
-    "board-buttons"
+    "board-buttons",
+    "on-enable",
+    "on-disable",
+    "remove-data"
   ],
+  "connectors": [],
   "board-buttons": [
     {
       "text": "Dynamic Queue",
-      "callback": "boardButtonCallback"
+      "url": "popup.html",
+      "height": 400,
+      "icon": "4133506.png"
     }
   ],
-  "iframe": {
-    "url": "https://marcos-sobrinho.github.io/trello-dynamic-queue/popup.html",
-    "height": 400
-  }
+  "on-enable": {
+    "url": "index.html"
+  },
+  "on-disable": {
+    "url": "index.html"
+  },
+  "remove-data": {
+    "url": "index.html"
+  },
+  "version": "1.0"
 }
