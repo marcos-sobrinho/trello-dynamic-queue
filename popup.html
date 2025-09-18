@@ -4,11 +4,25 @@
   <meta charset="utf-8">
   <title>Dynamic Queue</title>
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
-  <script src="https://marcos-sobrinho.github.io/trello-dynamic-queue/index.js"></script>
+  <script src="queue.js"></script>
 </head>
 <body>
   <h1>Dynamic Queue</h1>
   <button id="generate">Generate JSON</button>
   <pre id="output"></pre>
+
+  <script>
+    var t = window.TrelloPowerUp.iframe();
+
+    document.getElementById('generate').addEventListener('click', function() {
+      queue.generateJSON(t)
+        .then(json => {
+          document.getElementById('output').textContent = JSON.stringify(json, null, 2);
+        })
+        .catch(err => {
+          document.getElementById('output').textContent = 'Error: ' + err.message;
+        });
+    });
+  </script>
 </body>
 </html>
