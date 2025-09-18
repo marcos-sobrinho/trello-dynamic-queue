@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dynamic Queue Power-Up Init</title>
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  <script>
+    // Initialize Power-Up
+    window.TrelloPowerUp.initialize({
+      'board-buttons': function(t, options) {
+        return [{
+          icon: '4133506.png',
+          text: 'Dynamic Queue',
+          callback: function(t) {
+            return t.popup({
+              title: 'Queue',
+              url: 'popup.html',
+              height: 400
+            });
+          }
+        }];
+      },
+      'on-enable': function(t) { console.log("Dynamic Queue enabled"); },
+      'on-disable': function(t) { console.log("Dynamic Queue disabled"); },
+      'remove-data': function(t, options) { console.log("Data removal request"); }
+    });
+  </script>
+</head>
+<body>
+  <h1>Power-Up initialized</h1>
+</body>
+</html>
