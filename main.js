@@ -18,7 +18,7 @@ var t = TrelloPowerUp.initialize({
     // Defines the gear icon in the Power-Up menu for settings
     'show-settings': function(t) {
         return t.popup({
-            title: 'GAS Secret Key Setup',
+            title: 'Pairing Key Setup',
             url: './settings.html', // Points to the file below
             height: 140
         });
@@ -36,7 +36,7 @@ function createWebhook(t) {
             if (!secretKey) {
                 // Fails early if the key is missing, directing the user to settings
                 return t.alert({
-                    message: 'ERROR: Please set your GAS Secret Key in the Power-Up Settings (gear icon) first.',
+                    message: 'ERROR: Please set your Pairing Key in the Power-Up Settings (gear icon next to the Power-Up name in the menu) first.',
                     duration: 10,
                     display: 'error'
                 });
@@ -87,4 +87,5 @@ function createWebhook(t) {
 
 // NOTE: You would typically include a manual run button here as a fallback,
 // but for a truly continuous system, the Webhook is the primary driver.
+
 
