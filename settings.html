@@ -5,19 +5,27 @@
     <title>Queue Settings</title>
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
     <style>
-        /* Basic styling to make it look decent inside the Trello modal */
-        body { font-family: sans-serif; padding: 10px; }
-        input { margin: 5px 0 10px 0; padding: 8px; border: 1px solid #ccc; width: 95%; box-sizing: border-box; }
-        button { background-color: #0079bf; color: white; padding: 10px 15px; border: none; cursor: pointer; border-radius: 3px; }
+        body { font-family: 'Inter', sans-serif; padding: 10px; background-color: #f4f5f7; }
+        h3 { margin-top: 0; color: #172b4d; }
+        input { 
+            margin: 5px 0 10px 0; padding: 8px; border: 1px solid #ccc; width: 95%; 
+            box-sizing: border-box; border-radius: 3px; 
+        }
+        button { 
+            background-color: #5aac44; color: white; padding: 10px 15px; border: none; 
+            cursor: pointer; border-radius: 3px; font-weight: bold; 
+        }
+        button:hover { background-color: #4a9f37; }
     </style>
 </head>
 <body>
     <h3>GAS Secret Key Setup</h3>
     <form id="settingsForm">
-        <label for="gasSecretKey">Paste your shared Secret Key here:</label>
+        <label for="gasSecretKey">Paste your Pairing Key (must match GAS key):</label>
         <input type="password" id="gasSecretKey" placeholder="e.g., A1B2C3D4E5F6..." required>
         <button type="submit">Save Key</button>
     </form>
+    <!-- Load the settings logic script -->
     <script src="./settings.js"></script>
 </body>
 </html>
