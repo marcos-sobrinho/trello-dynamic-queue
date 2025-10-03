@@ -8,10 +8,7 @@ var t = TrelloPowerUp.initialize({
     'board-buttons': function(t) {
         return [{
             text: 'Setup Queue Automation',
-            icon: {
-                dark: './images/icon-dark.svg', // Ensure you have this path/file
-                light: './images/icon-light.svg'
-            },
+            icon: 'https://marcos-sobrinho.github.io/trello-dynamic-queue/4133506.png',
             callback: function(t) {
                 // Call the function to create the Webhook and authorize the user
                 return createWebhook(t);
@@ -90,3 +87,4 @@ function createWebhook(t) {
 
 // NOTE: You would typically include a manual run button here as a fallback,
 // but for a truly continuous system, the Webhook is the primary driver.
+
