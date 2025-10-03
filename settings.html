@@ -16,14 +16,18 @@
             cursor: pointer; border-radius: 3px; font-weight: bold; 
         }
         button:hover { background-color: #4a9f37; }
+        #saveMessage { font-weight: bold; margin-top: 10px; } /* Added CSS for the message area */
     </style>
 </head>
 <body>
     <h3>GAS Secret Key Setup</h3>
     <form id="settingsForm">
-        <label for="gasSecretKey">Paste your Pairing Key (must match GAS key):</label>
+        <!-- CRITICAL CHANGE: Consistent terminology -->
+        <label for="gasSecretKey">Paste your Secret Key (must match GAS key):</label>
         <input type="password" id="gasSecretKey" placeholder="e.g., A1B2C3D4E5F6..." required>
-        <button type="submit">Save Key</button>
+        <button type="submit">Save</button>
+        <!-- CRITICAL FIX: This element allows the JS to show success/error messages -->
+        <p id="saveMessage"></p> 
     </form>
     <!-- Load the settings logic script -->
     <script src="./settings.js"></script>
