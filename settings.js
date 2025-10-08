@@ -1,20 +1,16 @@
-// Initialize Trello Power-Up without immediate assignment.
-// This is more stable for the settings context.
-TrelloPowerUp.initialize();
+// Note: The global TrelloPowerUp.initialize() call that was crashing the script has been removed.
 
-// Use TrelloPowerUp.iframe() to get the specific context for this iframe,
-// and then use render() to execute logic when the context is fully loaded.
+// Use TrelloPowerUp.iframe() to get the specific client context for this settings frame,
+// and then use render() to execute logic only when Trello confirms the frame is loaded.
 TrelloPowerUp.iframe().render(function(){
-    // CRITICAL FIX: 'this' inside render() is the Trello client object.
-    // We assign it to 't' locally for use in the function.
+    // CRITICAL FIX: Inside render(), 'this' is the Trello client object we need.
     var t = this; 
     
     // --- Step 1: Pre-fill the input field on load ---
-    // Note: t.get is now reliably available because we are inside render().
+    // t.get is now reliably available.
     t.get('board', 'private', 'gasSecretKey')
         .then(function(key) {
             const inputElement = document.getElementById('gasSecretKey');
-            // Your selected code is now correctly nested here:
             if (key && inputElement) {
                 inputElement.value = key;
             }
@@ -22,7 +18,7 @@ TrelloPowerUp.iframe().render(function(){
 
     // --- Step 2: Set up the submit listener for the form ---
     document.getElementById('settingsForm').addEventListener('submit', function(event){
-        // CRITICAL: This now runs first, suppressing the browser's default validation message ("Preencha esse campo")
+        // CRITICAL: This runs first, preventing the browser's default validation message ("Preencha esse campo")
         event.preventDefault(); 
 
         const key = document.getElementById('gasSecretKey').value.trim();
