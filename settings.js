@@ -1,20 +1,30 @@
 // Note: The global TrelloPowerUp.initialize() call that was crashing the script has been removed.
 
 // Use TrelloPowerUp.iframe() to get the specific client context for this settings frame,
-//Identifier
 // and then use render() to execute logic only when Trello confirms the frame is loaded.
 TrelloPowerUp.iframe().render(function(){
-    // CRITICAL FIX: Inside render(), 'this' is the Trello client object we need.
+    // Inside render(), 'this' is the Trello client object we need.
     var t = this; 
     
     // --- Step 1: Pre-fill the input field on load ---
-    // t.get is now reliably available.
     t.get('board', 'private', 'gasSecretKey')
         .then(function(key) {
             const inputElement = document.getElementById('gasSecretKey');
+            // If a key is found, pre-fill the input box.
             if (key && inputElement) {
                 inputElement.value = key;
             }
+        })
+        .catch(function(error) {
+            // CRITICAL FIX: Handle the 'Unhandled rejection' error.
+            // This catch prevents the error from crashing the iframe on the first run when no key exists.
+            console.error("Error reading saved key (likely first run or cached):", error);
+            // We ignore the error and proceed to rendering the form.
+        })
+        .finally(function() {
+            // CRITICAL STEP: After the async operation, signal Trello the iframe is ready and size it.
+            // This should resolve the grey box and missing text issue.
+            t.sizeWindow();
         });
 
     // --- Step 2: Set up the submit listener for the form ---
@@ -64,4 +74,3 @@ TrelloPowerUp.iframe().render(function(){
             });
     });
 });
-
