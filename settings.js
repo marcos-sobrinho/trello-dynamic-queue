@@ -1,6 +1,7 @@
 // Note: The global TrelloPowerUp.initialize() call that was crashing the script has been removed.
 
 // Use TrelloPowerUp.iframe() to get the specific client context for this settings frame,
+//Identifier
 // and then use render() to execute logic only when Trello confirms the frame is loaded.
 TrelloPowerUp.iframe().render(function(){
     // CRITICAL FIX: Inside render(), 'this' is the Trello client object we need.
@@ -63,3 +64,4 @@ TrelloPowerUp.iframe().render(function(){
             });
     });
 });
+
