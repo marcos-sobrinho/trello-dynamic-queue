@@ -8,7 +8,7 @@ t.render(function(){
             if (key) {
                 // Ensure the element exists before trying to access it
                 const inputElement = document.getElementById('gasSecretKey');
-                if (inputElement) {
+                if (key && inputElement) {
                     inputElement.value = key;
                 }
             }
@@ -60,3 +60,4 @@ document.getElementById('settingsForm').addEventListener('submit', function(even
              }
         });
 });
+
