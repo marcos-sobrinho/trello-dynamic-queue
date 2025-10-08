@@ -1,12 +1,11 @@
 // Use TrelloPowerUp.iframe() to get the specific client context for this settings frame,
 // and then use render() to execute logic only when Trello confirms the frame is loaded.
-TrelloPowerUp.iframe().render(function(){
-    // Inside render(), 'this' is the Trello client object we need.
-    var t = this; 
+// CRITICAL FIX: We are now explicitly accepting the Trello client object as the argument 't'.
+TrelloPowerUp.iframe().render(function(t){ 
     
     // --- CRITICAL FIX: Immediately signal Trello to size and render the iframe. ---
-    // This prevents the grey box and ensures the form loads, regardless of the key-fetch result.
-    t.sizeWindow();
+    // 't' is now defined by the render function's argument. This should resolve the crash.
+    t.sizeWindow(); 
 
     // --- Step 1: Attempt to pre-fill the input field on load (Asynchronous) ---
     // We isolate the promise chain to prevent unhandled rejection from crashing the UI.
