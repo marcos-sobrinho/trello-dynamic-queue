@@ -3,8 +3,16 @@
 // CRITICAL FIX: We are now explicitly accepting the Trello client object as the argument 't'.
 TrelloPowerUp.iframe().render(function(t){ 
     
+    // --- CRITICAL DEFENSIVE CHECK (NEW) ---
+    // If the Trello framework failed to provide the client object, stop execution immediately.
+    if (!t) {
+        console.error("Initialization Failed: Trello client object (t) is undefined. Cannot run settings script.");
+        // If possible, you could display an error message in the HTML here, but returning is safest.
+        return; 
+    }
+    
     // --- CRITICAL FIX: Immediately signal Trello to size and render the iframe. ---
-    // 't' is now defined by the render function's argument. This should resolve the crash.
+    // This command is now protected by the 'if (!t)' check above.
     t.sizeWindow(); 
 
     // --- Step 1: Attempt to pre-fill the input field on load (Asynchronous) ---
