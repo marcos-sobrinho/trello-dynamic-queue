@@ -1,18 +1,16 @@
 // --- CRITICAL FIX: Use a Try/Catch block to handle initialization failures. ---
 try {
-    // This line (Line 3) attempts to initialize the Trello client object.
-    var t = TrelloPowerUp.initialize();
-
-    // Now, we call render on that client object to wait for the iframe environment to be ready.
-    t.render(function(){ 
-        
-        // 'this' inside t.render() is the Trello client object.
-        var tClient = this;
+    // --- We remove the crashing line (var t = TrelloPowerUp.initialize();) ---
+    // Instead, we use the stable iframe pattern which passes the client object as 'tClient'.
+    TrelloPowerUp.iframe().render(function(tClient){ 
         
         // --- CRITICAL DEFENSIVE CHECK ---
+        // 'tClient' is the object passed by the Trello framework. We ensure it's defined.
         if (!tClient) {
-            // This case should be caught by the outer catch block, but kept for redundancy.
-            console.error("Initialization Failed during render.");
+            console.error("Initialization Failed: Trello client object is undefined inside render.");
+            // Display internal error and stop.
+            document.getElementById('settingsForm').before(document.createTextNode("Fatal Error: Client initialization failed internally."));
+            document.getElementById('settingsForm').style.display = 'none';
             return; 
         }
         
@@ -81,11 +79,11 @@ try {
     });
 
 } catch (error) {
-    // === CATCH BLOCK EXECUTES IF TrelloPowerUp.initialize() FAILS ===
+    // === CATCH BLOCK EXECUTES ONLY IF THE IFRAME SETUP ITSELF FAILS ===
     const errorMessage = document.createElement('p');
     errorMessage.style.color = 'red';
     errorMessage.style.fontWeight = 'bold';
-    errorMessage.innerText = "CRITICAL ERROR: Power-Up initialization failed. Please try a hard refresh (Ctrl+F5) on the Trello board. If the error persists, ensure your Power-Up URL is correct.";
+    errorMessage.innerText = "CRITICAL ERROR: Power-Up initialization failed. This is likely a caching issue. Try a hard refresh (Ctrl+F5) on the Trello board, or try a different browser.";
     
     const settingsForm = document.getElementById('settingsForm');
     if (settingsForm) {
