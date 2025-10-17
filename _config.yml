@@ -1,0 +1,8 @@
+# Trello requires minimal caching to detect changes instantly.
+# This forces GitHub Pages to use a high standard for security headers,
+# which may stabilize the iframe connection.
+
+url: "https://marcos-sobrinho.github.io"
+baseurl: "/trello-dynamic-queue"
+safe: true
+
